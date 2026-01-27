@@ -2,13 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { CampusLocation, campusCenter, categoryColors } from '@/data/campusLocations';
-import { RouteWaypoint } from '@/utils/navigation';
 
 interface CampusMapProps {
   locations: CampusLocation[];
   selectedLocation: CampusLocation | null;
   userLocation: { lat: number; lng: number } | null;
-  route: RouteWaypoint[] | null;
+  route: { lat: number; lng: number }[] | null;
   onLocationSelect: (location: CampusLocation) => void;
   onMapReady?: () => void;
 }
@@ -39,28 +38,30 @@ export function CampusMap({
       attributionControl: false,
     });
 
-    // Satellite tile layer (Google Maps style)
+    // Satellite tile layer
     const satelliteLayer = L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      {
-        maxZoom: 20,
-      }
+      { maxZoom: 20 }
     );
 
-    // Street tile layer
+    // Street tile layer with labels
     const streetLayer = L.tileLayer(
       'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      {
-        maxZoom: 20,
-      }
+      { maxZoom: 20 }
     );
 
-    // Add default layer
-    satelliteLayer.addTo(map);
+    // Labels overlay for satellite
+    const labelsLayer = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      { maxZoom: 20 }
+    );
 
-    // Store layers for switching
+    satelliteLayer.addTo(map);
+    labelsLayer.addTo(map);
+
     (map as any)._layers_satellite = satelliteLayer;
     (map as any)._layers_street = streetLayer;
+    (map as any)._layers_labels = labelsLayer;
 
     mapInstanceRef.current = map;
     onMapReady?.();
@@ -78,41 +79,59 @@ export function CampusMap({
 
     const satelliteLayer = (map as any)._layers_satellite;
     const streetLayer = (map as any)._layers_street;
+    const labelsLayer = (map as any)._layers_labels;
 
     if (mapType === 'satellite') {
       if (map.hasLayer(streetLayer)) map.removeLayer(streetLayer);
       if (!map.hasLayer(satelliteLayer)) satelliteLayer.addTo(map);
+      if (!map.hasLayer(labelsLayer)) labelsLayer.addTo(map);
     } else {
       if (map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer);
+      if (map.hasLayer(labelsLayer)) map.removeLayer(labelsLayer);
       if (!map.hasLayer(streetLayer)) streetLayer.addTo(map);
     }
   }, [mapType]);
 
-  // Add location markers
+  // Add location markers with labels
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    // Clear existing markers
     markersRef.current.forEach((marker) => map.removeLayer(marker));
     markersRef.current.clear();
 
-    // Add markers for each location
     locations.forEach((location) => {
       const color = categoryColors[location.category];
+      const isSelected = selectedLocation?.id === location.id;
       
       const icon = L.divIcon({
         className: 'custom-marker',
         html: `
-          <div style="position: relative; width: 40px; height: 48px;">
-            <svg viewBox="0 0 24 24" width="40" height="48" fill="${color}" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+          <div style="position: relative; display: flex; flex-direction: column; align-items: center;">
+            <svg viewBox="0 0 24 24" width="${isSelected ? 48 : 40}" height="${isSelected ? 56 : 48}" fill="${color}" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4)); transition: all 0.2s;">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
               <circle cx="12" cy="9" r="3" fill="white"/>
             </svg>
+            <div style="
+              background: white;
+              padding: 2px 8px;
+              border-radius: 4px;
+              font-size: 11px;
+              font-weight: 500;
+              color: #333;
+              white-space: nowrap;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+              margin-top: -4px;
+              max-width: 120px;
+              overflow: hidden;
+              text-overflow: ellipsis;
+            ">
+              ${location.name.split('/')[0].trim()}
+            </div>
           </div>
         `,
-        iconSize: [40, 48],
-        iconAnchor: [20, 48],
+        iconSize: [isSelected ? 48 : 40, isSelected ? 72 : 64],
+        iconAnchor: [isSelected ? 24 : 20, isSelected ? 56 : 48],
       });
 
       const marker = L.marker([location.lat, location.lng], { icon })
@@ -121,7 +140,7 @@ export function CampusMap({
 
       markersRef.current.set(location.id, marker);
     });
-  }, [locations, onLocationSelect]);
+  }, [locations, selectedLocation, onLocationSelect]);
 
   // Update user location marker
   useEffect(() => {
@@ -146,17 +165,18 @@ export function CampusMap({
         iconAnchor: [12, 12],
       });
 
-      userMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon })
-        .addTo(map);
+      userMarkerRef.current = L.marker([userLocation.lat, userLocation.lng], { 
+        icon: userIcon,
+        zIndexOffset: 1000 
+      }).addTo(map);
     }
   }, [userLocation]);
 
-  // Draw route
+  // Draw route following roads
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    // Clear existing route
     if (routeLayerRef.current) {
       map.removeLayer(routeLayerRef.current);
       routeLayerRef.current = null;
@@ -165,17 +185,29 @@ export function CampusMap({
     if (route && route.length > 1) {
       const latlngs: L.LatLngExpression[] = route.map((point) => [point.lat, point.lng]);
       
-      routeLayerRef.current = L.polyline(latlngs, {
-        color: '#4285F4',
-        weight: 6,
-        opacity: 0.9,
+      // Draw shadow/outline first
+      L.polyline(latlngs, {
+        color: '#1a73e8',
+        weight: 10,
+        opacity: 0.3,
         lineCap: 'round',
         lineJoin: 'round',
       }).addTo(map);
 
+      // Draw main route line
+      routeLayerRef.current = L.polyline(latlngs, {
+        color: '#4285F4',
+        weight: 6,
+        opacity: 1,
+        lineCap: 'round',
+        lineJoin: 'round',
+        dashArray: '1, 12',
+        dashOffset: '0',
+      }).addTo(map);
+
       // Fit bounds to show the route
       const bounds = L.latLngBounds(latlngs);
-      map.fitBounds(bounds, { padding: [50, 50] });
+      map.fitBounds(bounds, { padding: [80, 80] });
     }
   }, [route]);
 
@@ -199,13 +231,14 @@ export function CampusMap({
     map.flyTo([userLocation.lat, userLocation.lng], 18, { duration: 0.5 });
   };
 
-  const zoomIn = () => {
-    mapInstanceRef.current?.zoomIn();
+  const centerOnCampus = () => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    map.flyTo([campusCenter.lat, campusCenter.lng], 17, { duration: 0.5 });
   };
 
-  const zoomOut = () => {
-    mapInstanceRef.current?.zoomOut();
-  };
+  const zoomIn = () => mapInstanceRef.current?.zoomIn();
+  const zoomOut = () => mapInstanceRef.current?.zoomOut();
 
   return (
     <div className="relative w-full h-full">
@@ -216,7 +249,7 @@ export function CampusMap({
         <button
           onClick={toggleMapType}
           className="floating-button"
-          title={mapType === 'satellite' ? 'Switch to Street View' : 'Switch to Satellite View'}
+          title={mapType === 'satellite' ? 'Street View' : 'Satellite View'}
         >
           {mapType === 'satellite' ? (
             <svg className="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -229,20 +262,26 @@ export function CampusMap({
           )}
         </button>
         
-        <button onClick={zoomIn} className="floating-button">
+        <button onClick={zoomIn} className="floating-button" title="Zoom in">
           <svg className="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
         </button>
         
-        <button onClick={zoomOut} className="floating-button">
+        <button onClick={zoomOut} className="floating-button" title="Zoom out">
           <svg className="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
           </svg>
         </button>
+
+        <button onClick={centerOnCampus} className="floating-button" title="View entire campus">
+          <svg className="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </button>
         
         {userLocation && (
-          <button onClick={centerOnUser} className="floating-button">
+          <button onClick={centerOnUser} className="floating-button" title="My location">
             <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm8.94 3A8.994 8.994 0 0013 3.06V1h-2v2.06A8.994 8.994 0 003.06 11H1v2h2.06A8.994 8.994 0 0011 20.94V23h2v-2.06A8.994 8.994 0 0020.94 13H23v-2h-2.06zM12 19c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z" />
             </svg>
