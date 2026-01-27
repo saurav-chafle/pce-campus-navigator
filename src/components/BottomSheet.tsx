@@ -1,12 +1,15 @@
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
-import { MapPin, Navigation, Clock, X, Share, Star, ChevronUp } from 'lucide-react';
+import { MapPin, Navigation, Clock, X, Share, Star, Footprints } from 'lucide-react';
 import { CampusLocation, categoryColors } from '@/data/campusLocations';
 import { formatDistance, calculateWalkingTime, getCategoryDisplayName } from '@/utils/navigation';
+import { DirectionsPanel } from './DirectionsPanel';
+import { DirectionStep } from '@/utils/pathfinding';
 
 interface BottomSheetProps {
   location: CampusLocation | null;
   distance: number | null;
   isNavigating: boolean;
+  directions: DirectionStep[];
   onStartNavigation: () => void;
   onStopNavigation: () => void;
   onClose: () => void;
@@ -16,6 +19,7 @@ export function BottomSheet({
   location,
   distance,
   isNavigating,
+  directions,
   onStartNavigation,
   onStopNavigation,
   onClose,
@@ -25,6 +29,8 @@ export function BottomSheet({
       onClose();
     }
   };
+
+  const totalDistance = directions.reduce((sum, step) => sum + step.distance, 0);
 
   return (
     <AnimatePresence>
@@ -45,7 +51,7 @@ export function BottomSheet({
             <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
           </div>
 
-          <div className="px-5 pb-6">
+          <div className="px-5 pb-6 max-h-[70vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
@@ -74,7 +80,7 @@ export function BottomSheet({
             {distance !== null && (
               <div className="flex items-center gap-4 mb-5 py-3 px-4 bg-secondary rounded-xl">
                 <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" />
+                  <Footprints className="w-4 h-4 text-primary" />
                   <span className="text-sm font-medium">{formatDistance(distance)}</span>
                 </div>
                 <div className="w-px h-4 bg-border" />
@@ -101,7 +107,7 @@ export function BottomSheet({
                   className="flex-1 nav-button-primary"
                 >
                   <Navigation className="w-5 h-5" />
-                  <span>Start Navigation</span>
+                  <span>Get Directions</span>
                 </button>
               )}
               
@@ -113,6 +119,15 @@ export function BottomSheet({
                 <Star className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Directions Panel when navigating */}
+            {isNavigating && directions.length > 0 && (
+              <DirectionsPanel 
+                steps={directions} 
+                totalDistance={totalDistance}
+                destinationName={location.name}
+              />
+            )}
 
             {/* Additional Info when navigating */}
             {isNavigating && distance !== null && (
@@ -126,7 +141,7 @@ export function BottomSheet({
                     <Navigation className="w-5 h-5 text-primary-foreground" />
                   </div>
                   <div>
-                    <p className="font-medium text-foreground">Navigating to {location.name}</p>
+                    <p className="font-medium text-foreground">Following campus roads</p>
                     <p className="text-sm text-muted-foreground">
                       {formatDistance(distance)} • {calculateWalkingTime(distance)} remaining
                     </p>

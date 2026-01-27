@@ -1,31 +1,31 @@
 import { useState, useEffect, useCallback } from 'react';
+import { AnimatePresence } from 'framer-motion';
 import { CampusMap } from '@/components/CampusMap';
 import { SearchBar } from '@/components/SearchBar';
 import { BottomSheet } from '@/components/BottomSheet';
 import { QuickCategories } from '@/components/QuickCategories';
 import { LocationPermissionModal } from '@/components/LocationPermissionModal';
+import { LocationList } from '@/components/LocationList';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { CampusLocation, campusLocations } from '@/data/campusLocations';
-import { 
-  calculateDistance, 
-  generateRoute, 
-  RouteWaypoint 
-} from '@/utils/navigation';
+import { calculateDistance } from '@/utils/navigation';
+import { generateRoadRoute, getDirections, DirectionStep } from '@/utils/pathfinding';
 
 const Index = () => {
   const [selectedLocation, setSelectedLocation] = useState<CampusLocation | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<CampusLocation['category'] | null>(null);
   const [filteredLocations, setFilteredLocations] = useState<CampusLocation[]>(campusLocations);
   const [isNavigating, setIsNavigating] = useState(false);
-  const [route, setRoute] = useState<RouteWaypoint[] | null>(null);
+  const [route, setRoute] = useState<{ lat: number; lng: number }[] | null>(null);
+  const [directions, setDirections] = useState<DirectionStep[]>([]);
   const [distance, setDistance] = useState<number | null>(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [showLocationList, setShowLocationList] = useState(false);
   
   const { 
     latitude, 
     longitude, 
     error: locationError, 
-    loading: locationLoading,
     startWatching 
   } = useGeolocation();
 
@@ -63,22 +63,35 @@ const Index = () => {
     }
   }, [latitude, longitude, selectedLocation]);
 
-  // Update route when navigating
+  // Update route when navigating - now following roads
   useEffect(() => {
     if (isNavigating && latitude && longitude && selectedLocation) {
-      const newRoute = generateRoute(
-        { lat: latitude, lng: longitude },
-        { lat: selectedLocation.lat, lng: selectedLocation.lng }
-      );
-      setRoute(newRoute);
+      const roadRoute = generateRoadRoute(latitude, longitude, selectedLocation.id);
+      
+      if (roadRoute.length > 0) {
+        setRoute(roadRoute);
+        setDirections(getDirections(roadRoute));
+      } else {
+        // Fallback to direct route if no road path found
+        setRoute([
+          { lat: latitude, lng: longitude },
+          { lat: selectedLocation.lat, lng: selectedLocation.lng }
+        ]);
+        setDirections([
+          { instruction: 'Start from your location', distance: 0, point: { lat: latitude, lng: longitude } },
+          { instruction: 'Walk to destination', distance: distance || 0, point: { lat: selectedLocation.lat, lng: selectedLocation.lng } }
+        ]);
+      }
     } else if (!isNavigating) {
       setRoute(null);
+      setDirections([]);
     }
-  }, [isNavigating, latitude, longitude, selectedLocation]);
+  }, [isNavigating, latitude, longitude, selectedLocation, distance]);
 
   const handleLocationSelect = useCallback((location: CampusLocation) => {
     setSelectedLocation(location);
     setIsNavigating(false);
+    setShowLocationList(false);
   }, []);
 
   const handleCategorySelect = useCallback((category: CampusLocation['category']) => {
@@ -96,12 +109,14 @@ const Index = () => {
   const handleStopNavigation = useCallback(() => {
     setIsNavigating(false);
     setRoute(null);
+    setDirections([]);
   }, []);
 
   const handleCloseSheet = useCallback(() => {
     setSelectedLocation(null);
     setIsNavigating(false);
     setRoute(null);
+    setDirections([]);
   }, []);
 
   const handleRequestPermission = useCallback(() => {
@@ -134,12 +149,14 @@ const Index = () => {
           <SearchBar
             onLocationSelect={handleLocationSelect}
             onClose={handleCloseSheet}
+            onShowAllLocations={() => setShowLocationList(true)}
             isNavigating={isNavigating}
             destination={selectedLocation}
+            userLocation={userLocation}
           />
           
           {/* Quick Categories */}
-          {!isNavigating && (
+          {!isNavigating && !showLocationList && (
             <QuickCategories
               onCategorySelect={handleCategorySelect}
               selectedCategory={selectedCategory}
@@ -153,10 +170,23 @@ const Index = () => {
         location={selectedLocation}
         distance={distance}
         isNavigating={isNavigating}
+        directions={directions}
         onStartNavigation={handleStartNavigation}
         onStopNavigation={handleStopNavigation}
         onClose={handleCloseSheet}
       />
+
+      {/* Location List Modal */}
+      <AnimatePresence>
+        {showLocationList && (
+          <LocationList
+            locations={campusLocations}
+            userLocation={userLocation}
+            onLocationSelect={handleLocationSelect}
+            onClose={() => setShowLocationList(false)}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Location Permission Modal */}
       <LocationPermissionModal
