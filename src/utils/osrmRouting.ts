@@ -99,6 +99,24 @@ export async function fetchOSRMRoute(
       });
     }
     
+    // Ensure the route starts from the exact user location
+    if (coordinates.length > 0) {
+      const firstPoint = coordinates[0];
+      const distFromStart = calculateDistance(fromLat, fromLng, firstPoint.lat, firstPoint.lng);
+      if (distFromStart > 10) { // If OSRM snapped more than 10m away, add exact start
+        coordinates.unshift({ lat: fromLat, lng: fromLng });
+      }
+    }
+    
+    // Ensure the route ends at the exact destination
+    if (coordinates.length > 0) {
+      const lastPoint = coordinates[coordinates.length - 1];
+      const distToEnd = calculateDistance(lastPoint.lat, lastPoint.lng, toLat, toLng);
+      if (distToEnd > 10) { // If OSRM ended more than 10m away, add exact destination
+        coordinates.push({ lat: toLat, lng: toLng });
+      }
+    }
+    
     return {
       coordinates,
       distance: Math.round(route.distance),
