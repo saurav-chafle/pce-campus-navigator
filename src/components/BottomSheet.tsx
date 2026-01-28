@@ -3,13 +3,13 @@ import { MapPin, Navigation, Clock, X, Share, Star, Footprints } from 'lucide-re
 import { CampusLocation, categoryColors } from '@/data/campusLocations';
 import { formatDistance, calculateWalkingTime, getCategoryDisplayName } from '@/utils/navigation';
 import { DirectionsPanel } from './DirectionsPanel';
-import { DirectionStep } from '@/utils/pathfinding';
+import { OSRMStep } from '@/utils/osrmRouting';
 
 interface BottomSheetProps {
   location: CampusLocation | null;
   distance: number | null;
   isNavigating: boolean;
-  directions: DirectionStep[];
+  directions: OSRMStep[];
   onStartNavigation: () => void;
   onStopNavigation: () => void;
   onClose: () => void;
