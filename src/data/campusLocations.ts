@@ -177,19 +177,67 @@ export const campusLocations: CampusLocation[] = [
     category: 'academic',
     description: 'Business Administration Building',
   },
+  {
+    id: 'architecture',
+    name: 'Architecture',
+    lat: 21.100782,
+    lng: 79.013313,
+    category: 'academic',
+    description: 'Architecture Department',
+  },
+  {
+    id: 'architecture-canteen',
+    name: 'Architecture Canteen',
+    lat: 21.100698,
+    lng: 79.013856,
+    category: 'food',
+    description: 'Canteen near Architecture building',
+  },
+  {
+    id: 'main-auditorium',
+    name: 'Main Auditorium PCE',
+    lat: 21.100057,
+    lng: 79.014895,
+    category: 'facility',
+    description: 'Main college auditorium for major events',
+  },
+  {
+    id: 'biotech',
+    name: 'Biotech',
+    lat: 21.099346,
+    lng: 79.016460,
+    category: 'academic',
+    description: 'Biotechnology Department',
+  },
+  {
+    id: 'chemical-technology',
+    name: 'Chemical Technology',
+    lat: 21.099346,
+    lng: 79.016460,
+    category: 'academic',
+    description: 'Chemical Technology Department',
+  },
+  {
+    id: 'back-gate',
+    name: 'Back Gate',
+    lat: 21.099573,
+    lng: 79.019126,
+    category: 'facility',
+    description: 'Back entrance to the campus',
+  },
 ];
 
-// Campus center coordinates
+// Campus center coordinates (updated to cover new locations)
 export const campusCenter = {
-  lat: 21.102300,
-  lng: 79.006500,
+  lat: 21.101500,
+  lng: 79.010000,
 };
 
-// Campus bounds
+// Campus bounds (expanded to include new locations)
 export const campusBounds = {
   north: 21.104500,
-  south: 21.100500,
-  east: 79.010000,
+  south: 21.098500,
+  east: 79.020000,
   west: 79.003500,
 };
 

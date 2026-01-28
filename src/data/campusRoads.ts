@@ -1,5 +1,7 @@
 // Campus road network for realistic navigation
 // Each road segment connects two points
+// Note: Primary routing now uses OSRM API for accurate road-following
+// This file is kept for reference and fallback purposes
 
 export interface RoadNode {
   id: string;
@@ -13,7 +15,7 @@ export interface RoadSegment {
   to: string;
 }
 
-// Road junction points on campus
+// Road junction points on campus (updated with new locations)
 export const roadNodes: RoadNode[] = [
   // Main entrance area
   { id: 'gate', lat: 21.103063, lng: 79.004020, name: 'Main Gate' },
@@ -67,6 +69,16 @@ export const roadNodes: RoadNode[] = [
   { id: 'mechanical_tnp', lat: 21.101812, lng: 79.009012 },
   { id: 'admin_section', lat: 21.101874, lng: 79.009377 },
   { id: 'mech_ground', lat: 21.101601, lng: 79.009004 },
+  
+  // New locations - Eastern campus area
+  { id: 'architecture_junction', lat: 21.100800, lng: 79.012000 },
+  { id: 'architecture', lat: 21.100782, lng: 79.013313, name: 'Architecture' },
+  { id: 'arch_canteen', lat: 21.100698, lng: 79.013856, name: 'Architecture Canteen' },
+  { id: 'main_auditorium', lat: 21.100057, lng: 79.014895, name: 'Main Auditorium' },
+  { id: 'biotech_junction', lat: 21.099500, lng: 79.015500 },
+  { id: 'biotech', lat: 21.099346, lng: 79.016460, name: 'Biotech' },
+  { id: 'chemical_tech', lat: 21.099346, lng: 79.016460, name: 'Chemical Technology' },
+  { id: 'back_gate', lat: 21.099573, lng: 79.019126, name: 'Back Gate' },
 ];
 
 // Road connections (bidirectional)
@@ -123,6 +135,16 @@ export const roadSegments: RoadSegment[] = [
   { from: 'mech_junction', to: 'mechanical_tnp' },
   { from: 'mech_junction', to: 'admin_section' },
   { from: 'mech_junction', to: 'mech_ground' },
+  
+  // Eastern campus (Architecture, Auditorium, Biotech area)
+  { from: 'admin_section', to: 'architecture_junction' },
+  { from: 'architecture_junction', to: 'architecture' },
+  { from: 'architecture', to: 'arch_canteen' },
+  { from: 'arch_canteen', to: 'main_auditorium' },
+  { from: 'main_auditorium', to: 'biotech_junction' },
+  { from: 'biotech_junction', to: 'biotech' },
+  { from: 'biotech', to: 'chemical_tech' },
+  { from: 'biotech_junction', to: 'back_gate' },
 ];
 
 // Map location IDs to nearest road nodes
@@ -148,4 +170,10 @@ export const locationToRoadNode: Record<string, string> = {
   'admin-section': 'admin_section',
   'mechanical-ground': 'mech_ground',
   'mba-bba': 'mba_bba',
+  'architecture': 'architecture',
+  'architecture-canteen': 'arch_canteen',
+  'main-auditorium': 'main_auditorium',
+  'biotech': 'biotech',
+  'chemical-technology': 'chemical_tech',
+  'back-gate': 'back_gate',
 };
