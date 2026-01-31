@@ -1,32 +1,23 @@
 import { motion } from 'framer-motion';
 import { Navigation, ArrowRight, ArrowLeft, CornerUpRight, CornerUpLeft, Circle, MapPin, MoveRight, ArrowUp } from 'lucide-react';
-import { OSRMStep } from '@/utils/osrmRouting';
+import { DirectionStep } from '@/utils/pathfinding';
 import { formatDistance } from '@/utils/navigation';
 
 interface DirectionsPanelProps {
-  steps: OSRMStep[];
+  steps: DirectionStep[];
   totalDistance: number;
   destinationName: string;
 }
 
 export function DirectionsPanel({ steps, totalDistance, destinationName }: DirectionsPanelProps) {
-  const getIcon = (step: OSRMStep) => {
+  const getIcon = (step: DirectionStep) => {
     const instruction = step.instruction.toLowerCase();
-    const maneuver = step.maneuver;
     
     if (instruction.includes('arrive') || instruction.includes('destination')) {
       return <MapPin className="w-5 h-5" />;
     }
     if (instruction.includes('start') || instruction.includes('depart') || instruction.includes('head')) {
       return <Circle className="w-5 h-5" />;
-    }
-    
-    if (maneuver) {
-      const modifier = maneuver.modifier;
-      if (modifier === 'right' || modifier === 'sharp right') return <CornerUpRight className="w-5 h-5" />;
-      if (modifier === 'left' || modifier === 'sharp left') return <CornerUpLeft className="w-5 h-5" />;
-      if (modifier === 'slight right') return <ArrowRight className="w-5 h-5" />;
-      if (modifier === 'slight left') return <ArrowLeft className="w-5 h-5" />;
     }
     
     if (instruction.includes('turn right') || instruction.includes('sharp right')) return <CornerUpRight className="w-5 h-5" />;
@@ -38,7 +29,7 @@ export function DirectionsPanel({ steps, totalDistance, destinationName }: Direc
     return <Navigation className="w-5 h-5" />;
   };
 
-  const getIconColor = (step: OSRMStep) => {
+  const getIconColor = (step: DirectionStep) => {
     const instruction = step.instruction.toLowerCase();
     if (instruction.includes('start') || instruction.includes('depart') || instruction.includes('head')) {
       return 'text-primary bg-primary/10';
