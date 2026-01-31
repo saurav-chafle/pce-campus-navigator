@@ -9,7 +9,7 @@ import { LocationList } from '@/components/LocationList';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { CampusLocation, campusLocations } from '@/data/campusLocations';
 import { calculateDistance } from '@/utils/navigation';
-import { fetchOSRMRoute, createDirectRoute, OSRMStep, OSRMRoute } from '@/utils/osrmRouting';
+import { generateRoadRoute, getDirections, DirectionStep } from '@/utils/pathfinding';
 
 const Index = () => {
   const [selectedLocation, setSelectedLocation] = useState<CampusLocation | null>(null);
@@ -17,7 +17,7 @@ const Index = () => {
   const [filteredLocations, setFilteredLocations] = useState<CampusLocation[]>(campusLocations);
   const [isNavigating, setIsNavigating] = useState(false);
   const [route, setRoute] = useState<{ lat: number; lng: number }[] | null>(null);
-  const [directions, setDirections] = useState<OSRMStep[]>([]);
+  const [directions, setDirections] = useState<DirectionStep[]>([]);
   const [distance, setDistance] = useState<number | null>(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [showLocationList, setShowLocationList] = useState(false);
@@ -64,50 +64,35 @@ const Index = () => {
     }
   }, [latitude, longitude, selectedLocation]);
 
-  // Update route when navigating - using OSRM for road-following routes
+  // Update route when navigating - using local campus road network for accurate paths
   useEffect(() => {
     if (isNavigating && latitude && longitude && selectedLocation) {
       setIsLoadingRoute(true);
       
-      // Fetch route from OSRM API
-      fetchOSRMRoute(
-        latitude,
-        longitude,
-        selectedLocation.lat,
-        selectedLocation.lng
-      ).then((osrmRoute) => {
-        if (osrmRoute && osrmRoute.coordinates.length > 0) {
-          setRoute(osrmRoute.coordinates);
-          setDirections(osrmRoute.steps);
-        } else {
-          // Fallback to direct route if OSRM fails
-          const fallbackRoute = createDirectRoute(
-            latitude,
-            longitude,
-            selectedLocation.lat,
-            selectedLocation.lng
-          );
-          setRoute(fallbackRoute.coordinates);
-          setDirections(fallbackRoute.steps);
-        }
-        setIsLoadingRoute(false);
-      }).catch(() => {
-        // Fallback to direct route on error
-        const fallbackRoute = createDirectRoute(
-          latitude,
-          longitude,
-          selectedLocation.lat,
-          selectedLocation.lng
-        );
-        setRoute(fallbackRoute.coordinates);
-        setDirections(fallbackRoute.steps);
-        setIsLoadingRoute(false);
-      });
+      // Use local campus pathfinding for accurate routes
+      const roadRoute = generateRoadRoute(latitude, longitude, selectedLocation.id);
+      
+      if (roadRoute.length > 0) {
+        setRoute(roadRoute);
+        const routeDirections = getDirections(roadRoute);
+        setDirections(routeDirections);
+      } else {
+        // Fallback to direct line if no path found
+        setRoute([
+          { lat: latitude, lng: longitude },
+          { lat: selectedLocation.lat, lng: selectedLocation.lng }
+        ]);
+        setDirections([
+          { instruction: 'Walk towards destination', distance: 0, point: { lat: latitude, lng: longitude } },
+          { instruction: 'Arrive at destination', distance: distance || 0, point: { lat: selectedLocation.lat, lng: selectedLocation.lng } }
+        ]);
+      }
+      setIsLoadingRoute(false);
     } else if (!isNavigating) {
       setRoute(null);
       setDirections([]);
     }
-  }, [isNavigating, latitude, longitude, selectedLocation]);
+  }, [isNavigating, latitude, longitude, selectedLocation, distance]);
 
   const handleLocationSelect = useCallback((location: CampusLocation) => {
     setSelectedLocation(location);
