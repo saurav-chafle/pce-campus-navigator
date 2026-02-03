@@ -9,7 +9,7 @@ import { LocationList } from '@/components/LocationList';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { CampusLocation, campusLocations } from '@/data/campusLocations';
 import { calculateDistance } from '@/utils/navigation';
-import { fetchOSRMRoute, createDirectRoute, OSRMStep } from '@/utils/osrmRouting';
+import { generateLocalRoute, createDirectLocalRoute, LocalStep } from '@/utils/localRouting';
 
 const Index = () => {
   const [selectedLocation, setSelectedLocation] = useState<CampusLocation | null>(null);
@@ -17,7 +17,7 @@ const Index = () => {
   const [filteredLocations, setFilteredLocations] = useState<CampusLocation[]>(campusLocations);
   const [isNavigating, setIsNavigating] = useState(false);
   const [route, setRoute] = useState<{ lat: number; lng: number }[] | null>(null);
-  const [directions, setDirections] = useState<OSRMStep[]>([]);
+  const [directions, setDirections] = useState<LocalStep[]>([]);
   const [distance, setDistance] = useState<number | null>(null);
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [showLocationList, setShowLocationList] = useState(false);
@@ -64,36 +64,25 @@ const Index = () => {
     }
   }, [latitude, longitude, selectedLocation]);
 
-  // Update route when navigating - using OSRM for road-following routes
+  // Update route when navigating - using local GeoJSON paths for accurate campus routes
   useEffect(() => {
     if (isNavigating && latitude && longitude && selectedLocation) {
       setIsLoadingRoute(true);
       
-      // Fetch route from OSRM API (uses OpenStreetMap data)
-      fetchOSRMRoute(
+      // Generate route using local campus paths
+      const localRoute = generateLocalRoute(
         latitude,
         longitude,
         selectedLocation.lat,
         selectedLocation.lng
-      ).then((osrmRoute) => {
-        if (osrmRoute && osrmRoute.coordinates.length > 0) {
-          setRoute(osrmRoute.coordinates);
-          setDirections(osrmRoute.steps);
-        } else {
-          // Fallback to direct route if OSRM fails
-          const fallbackRoute = createDirectRoute(
-            latitude,
-            longitude,
-            selectedLocation.lat,
-            selectedLocation.lng
-          );
-          setRoute(fallbackRoute.coordinates);
-          setDirections(fallbackRoute.steps);
-        }
-        setIsLoadingRoute(false);
-      }).catch(() => {
-        // Fallback to direct route on error
-        const fallbackRoute = createDirectRoute(
+      );
+      
+      if (localRoute && localRoute.coordinates.length > 0) {
+        setRoute(localRoute.coordinates);
+        setDirections(localRoute.steps);
+      } else {
+        // Fallback to direct route if local routing fails
+        const fallbackRoute = createDirectLocalRoute(
           latitude,
           longitude,
           selectedLocation.lat,
@@ -101,8 +90,9 @@ const Index = () => {
         );
         setRoute(fallbackRoute.coordinates);
         setDirections(fallbackRoute.steps);
-        setIsLoadingRoute(false);
-      });
+      }
+      
+      setIsLoadingRoute(false);
     } else if (!isNavigating) {
       setRoute(null);
       setDirections([]);

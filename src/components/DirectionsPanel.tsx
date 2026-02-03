@@ -1,16 +1,16 @@
 import { motion } from 'framer-motion';
 import { Navigation, ArrowRight, ArrowLeft, CornerUpRight, CornerUpLeft, Circle, MapPin, MoveRight, ArrowUp } from 'lucide-react';
-import { OSRMStep } from '@/utils/osrmRouting';
+import { LocalStep } from '@/utils/localRouting';
 import { formatDistance } from '@/utils/navigation';
 
 interface DirectionsPanelProps {
-  steps: OSRMStep[];
+  steps: LocalStep[];
   totalDistance: number;
   destinationName: string;
 }
 
 export function DirectionsPanel({ steps, totalDistance, destinationName }: DirectionsPanelProps) {
-  const getIcon = (step: OSRMStep) => {
+  const getIcon = (step: LocalStep) => {
     const instruction = step.instruction.toLowerCase();
     const maneuver = step.maneuver;
     
@@ -38,7 +38,7 @@ export function DirectionsPanel({ steps, totalDistance, destinationName }: Direc
     return <Navigation className="w-5 h-5" />;
   };
 
-  const getIconColor = (step: OSRMStep) => {
+  const getIconColor = (step: LocalStep) => {
     const instruction = step.instruction.toLowerCase();
     if (instruction.includes('start') || instruction.includes('depart') || instruction.includes('head')) {
       return 'text-primary bg-primary/10';
