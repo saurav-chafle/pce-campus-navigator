@@ -1,0 +1,68 @@
+// Campus paths data extracted from GeoJSON
+// Contains accurate walking paths for campus navigation
+
+export interface GeoJSONFeature {
+  type: string;
+  properties: Record<string, string>;
+  geometry: {
+    type: string;
+    coordinates: [number, number][] | [number, number];
+  };
+  id?: number;
+}
+
+export interface GeoJSONData {
+  type: string;
+  features: GeoJSONFeature[];
+}
+
+export const campusPathsData: GeoJSONData = {
+  "type": "FeatureCollection",
+  "features": [
+    {"type":"Feature","properties":{"IT Audtorium":""},"geometry":{"coordinates":[79.00602560741709,21.101254904551723],"type":"Point"}},
+    {"type":"Feature","properties":{"IT":"","CS":"","CT":""},"geometry":{"coordinates":[79.00681498300474,21.10133279965447],"type":"Point"}},
+    {"type":"Feature","properties":{"First Year":"","Electrical ":"","Civil":""},"geometry":{"coordinates":[79.00550028461976,21.103568136555268],"type":"Point"},"id":2},
+    {"type":"Feature","properties":{"Swimming Pool":""},"geometry":{"coordinates":[79.00621597841439,21.103691514560182],"type":"Point"}},
+    {"type":"Feature","properties":{"PCE Main Gate":""},"geometry":{"coordinates":[79.00396776638746,21.103110911291367],"type":"Point"},"id":4},
+    {"type":"Feature","properties":{"Library":""},"geometry":{"coordinates":[79.00760069032157,21.101448921880618],"type":"Point"}},
+    {"type":"Feature","properties":{"AIDS":""},"geometry":{"coordinates":[79.00761304644965,21.10188370173887],"type":"Point"}},
+    {"type":"Feature","properties":{"AERO":"","ETC":"","EC":""},"geometry":{"coordinates":[79.00765651969704,21.10220816542497],"type":"Point"}},
+    {"type":"Feature","properties":{"PCE Canteen":""},"geometry":{"coordinates":[79.00759441505727,21.10267168374763],"type":"Point"}},
+    {"type":"Feature","properties":{"Pce 1st Year Canteen":""},"geometry":{"coordinates":[79.00497359929443,21.103592922116718],"type":"Point"}},
+    {"type":"Feature","properties":{"PCE Ground":""},"geometry":{"coordinates":[79.00475485989352,21.10212606112998],"type":"Point"}},
+    {"type":"Feature","properties":{"Mechanical":"","T&P Department":"","Admin Block":""},"geometry":{"coordinates":[79.00895179186142,21.10192817022464],"type":"Point"}},
+    {"type":"Feature","properties":{"BBA":"","MBA":""},"geometry":{"coordinates":[79.00835969483671,21.102029629915833],"type":"Point"},"id":12},
+    {"type":"Feature","properties":{"Architecture Building":""},"geometry":{"coordinates":[79.01330949015278,21.101015444452983],"type":"Point"},"id":13},
+    {"type":"Feature","properties":{"PCE Back Gate":""},"geometry":{"coordinates":[79.01908506102444,21.099566542721902],"type":"Point"},"id":14},
+    {"type":"Feature","properties":{"PCE Auditorium":""},"geometry":{"coordinates":[79.01483767658368,21.0993197482492],"type":"Point"}},
+    {"type":"Feature","properties":{"Chemical":"","BioTechnology":""},"geometry":{"coordinates":[79.01587686728067,21.099370478994345],"type":"Point"},"id":16},
+    {"type":"Feature","properties":{"PCE Lake":""},"geometry":{"coordinates":[79.00628834818463,21.10260251067298],"type":"Point"}},
+    {"type":"Feature","properties":{"Saraswati Temple":""},"geometry":{"coordinates":[79.00590154936697,21.101862982198668],"type":"Point"},"id":26},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00397260470749,21.103110853305353],[79.0040696831112,21.103119344031313],[79.00412125601332,21.103065569426604],[79.00431541282222,21.103096702095],[79.0043791205253,21.103139155722005],[79.00484934404778,21.10319576053992],[79.00490091694991,21.103167458133996],[79.00514057926188,21.103088211367705],[79.00530136536872,21.102975001628394],[79.00539541007294,21.102839149827815],[79.00549248847807,21.102646692896627],[79.0056047353824,21.102261778286447],[79.00567311630454,21.101834314561287],[79.00575902900914,21.101726271476394],[79.00593037869271,21.10162174796386],[79.00721247073267,21.1016185928315],[79.00728166891241,21.101667780630905],[79.00780889870845,21.101698522838404],[79.00783855538316,21.10166163218834],[79.007871498302,21.101099052128248],[79.00826691467739,21.10115131815124]],"type":"LineString"},"id":19},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00431525974932,21.103096148882244],[79.00416624762994,21.102921382685324],[79.0040449091914,21.102635401191534],[79.00403639947308,21.102480411514392],[79.00442063128037,21.10142276020396],[79.0047516032347,21.101071391155116],[79.00572169344474,21.10103235009862],[79.00615157655773,21.10102880091104],[79.00670319648032,21.101039448473614],[79.00787345311807,21.101103339207313]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00826876898441,21.101151816102572],[79.00867963072085,21.101183758760754],[79.0096915679602,21.10151028331353],[79.00998069288522,21.101570619293284]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00998023162055,21.10157777284175],[79.01309973739353,21.1007472637083],[79.01446585367461,21.100430858502534],[79.01532942417515,21.10012562683208],[79.01550449224993,21.100052733289928],[79.0158582898552,21.09996400299204],[79.01625393448978,21.09996400299204],[79.0166115363715,21.09989301871549],[79.01683598861621,21.099914314001893],[79.01825884094796,21.09988237189704],[79.01857079152398,21.099822035231284],[79.018962631884,21.09965522196785],[79.019095781521,21.099566491432483]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.01534217739066,21.100116025332554],[79.01513681379095,21.099498296805194],[79.0151562879256,21.099390937307362],[79.01516691018031,21.09932486988521],[79.01505891725395,21.09932321819886]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.0097247067489,21.101517157201783],[79.0095566808958,21.101744516990962],[79.00944252594962,21.101781612495245],[79.00851518154428,21.101862981402178]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00732889714214,21.101670342744598],[79.00732662244604,21.10240460875272]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.0073259344669,21.10240377028545],[79.0076014631498,21.102409298269762]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00760119489553,21.102408746231376],[79.0078015663193,21.102422259546273],[79.0078916932253,21.102417004368476],[79.00793273315543,21.10238547329753],[79.00797058084572,21.10208005537605],[79.00813601716072,21.102001102100587]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00797032772971,21.102079978598553],[79.00800082141183,21.10177071239724],[79.00782474498823,21.101679859592124]],"type":"LineString"}},
+    {"type":"Feature","properties":{"Mechanical Ground":""},"geometry":{"coordinates":[79.00906472024741,21.101611730007008],"type":"Point"},"id":31},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00826665489859,21.101151227493077],[79.00827000766014,21.10115185308311]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00732784427896,21.10167015707603],[79.00734624546823,21.101072600688966]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00567266875538,21.101833966441106],[79.00572373459977,21.101027880642135]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.0073267054475,21.102403934232854],[79.00728430526351,21.102614209493197],[79.0068558402582,21.103049332599966],[79.00677550306864,21.103086807258094],[79.0065211019712,21.103099298809]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00652146141192,21.10309922870414],[79.00647148557351,21.103101414211594],[79.00628251443607,21.103277711714938],[79.00620833342225,21.10329883813361]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00998070359668,21.101570336129228],[79.00997995534607,21.101578014966478]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.0165456738028,21.09990569908956],[79.01666161625946,21.099795857339117],[79.01671234101678,21.09971274991655],[79.01671976432766,21.099620408316213],[79.01669501995707,21.099539609368648],[79.01662202406317,21.099451884747538],[79.0165139568075,21.09937277815412],[79.01645742904282,21.099361920696552]],"type":"LineString"},"id":37},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.0138337666628,21.10057700805541],[79.01391015172925,21.100865332780344],[79.0138630755431,21.100874828918464]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00898127853776,21.10182204160448],[79.0089848155427,21.101850364833737]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00903208663254,21.101817288945185],[79.00903208663254,21.10174966710524]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00620838145306,21.103298829989527],[79.00620692911474,21.10332798090859]],"type":"LineString"}},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00484915708182,21.103196005375807],[79.00474143782958,21.10350999624154],[79.00472242179097,21.103684983565827]],"type":"LineString"},"id":42},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00785089119069,21.1014458233835],[79.00778648375456,21.10144417712111]],"type":"LineString"}},
+    {"type":"Feature","properties":{"IT Garden":""},"geometry":{"coordinates":[79.00661863445288,21.10189072362425],"type":"Point"},"id":44},
+    {"type":"Feature","properties":{},"geometry":{"coordinates":[[79.00759706019852,21.102409517804162],[79.00759706019852,21.102474185967722]],"type":"LineString"}}
+  ]
+};

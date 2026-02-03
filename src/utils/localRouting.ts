@@ -1,5 +1,5 @@
 import { calculateDistance } from './navigation';
-import campusPathsData from '@/data/campusPaths.geojson';
+import { campusPathsData } from '@/data/campusPaths';
 
 export interface RoutePoint {
   lat: number;
@@ -42,15 +42,15 @@ interface Graph {
   edges: Map<string, GraphEdge[]>;
 }
 
-// Parse the GeoJSON and build the graph
+// Parse the campus paths data and build the graph
 function buildGraphFromGeoJSON(): Graph {
   const nodes = new Map<string, GraphNode>();
   const edges = new Map<string, GraphEdge[]>();
   
-  const data = campusPathsData as any;
+  const data = campusPathsData;
   
   if (!data.features) {
-    console.error('Invalid GeoJSON data');
+    console.error('Invalid campus paths data');
     return { nodes, edges };
   }
   
